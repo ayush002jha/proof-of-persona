@@ -1,11 +1,12 @@
 // app/_layout.tsx
-import "../global.css"
+import "../global.css";
 import "react-native-reanimated";
 import "react-native-get-random-values";
 import { Stack } from "expo-router";
 import { AbstraxionProvider } from "@burnt-labs/abstraxion-react-native";
 import { Buffer } from "buffer";
 import crypto from "react-native-quick-crypto";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 global.crypto = crypto;
 global.Buffer = Buffer;
 
@@ -19,10 +20,13 @@ const treasuryConfig = {
 
 export default function RootLayout() {
   return (
-    <AbstraxionProvider config={treasuryConfig} >
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-    </AbstraxionProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AbstraxionProvider config={treasuryConfig}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+      </AbstraxionProvider>
+    </GestureHandlerRootView>
   );
 }

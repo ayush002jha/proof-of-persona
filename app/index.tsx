@@ -1,9 +1,15 @@
 // app/index.tsx
-import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
-import { useAbstraxionAccount } from '@burnt-labs/abstraxion-react-native';
-import { router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  Image,
+} from "react-native";
+import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
+import { router } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
   const { login, isConnected, isConnecting } = useAbstraxionAccount();
@@ -12,24 +18,25 @@ export default function LoginScreen() {
   useEffect(() => {
     // If the user is connected, immediately replace the login screen with the dashboard
     if (isConnected) {
-      router.replace('/(tabs)'); // Navigate to the main tab layout
+      router.replace("/(tabs)"); // Navigate to the main tab layout
     }
   }, [isConnected]); // This runs whenever the `isConnected` state changes
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100 justify-center items-center">
-      <View className="bg-white p-8 rounded-2xl shadow-lg w-11/12 max-w-sm items-center">
+    <SafeAreaView className="flex-1 bg-white items-center justify-around">
+      <View className="p-8 rounded-2xl w-11/12 max-w-sm items-center">
         {/* You can replace this with your actual logo asset */}
-        <Image 
-          source={{ uri: 'https://i.imgur.com/your-logo.png' }} // Placeholder Icon
-          className="w-20 h-20 mb-6" 
+        <Image
+          source={require("../assets/images/POP2.png")}
+          style={{ height: "75%", aspectRatio: 1 }}
         />
-        
-        <Text className="text-3xl font-bold text-gray-800">
+
+        {/* <Text className="text-3xl font-bold text-gray-800">
           Proof of Persona
-        </Text>
+        </Text> */}
         <Text className="text-base text-gray-500 mt-2 text-center mb-8">
-          Build your Persona Score from Web2 activities and unlock exclusive opportunities.
+          Build your Persona Score from Web2 activities and unlock exclusive
+          opportunities.
         </Text>
 
         {isConnecting ? (
