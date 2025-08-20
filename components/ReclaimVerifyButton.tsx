@@ -1,14 +1,14 @@
 // components/ReclaimVerifyButton.tsx
-import React, { useState } from "react";
-import { Button, Alert, ActivityIndicator, View } from "react-native";
-import { ReclaimVerification } from "@reclaimprotocol/inapp-rn-sdk";
 import {
   useAbstraxionAccount,
-  useAbstraxionSigningClient,
   useAbstraxionClient,
+  useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion-react-native";
+import { ReclaimVerification } from "@reclaimprotocol/inapp-rn-sdk";
+import React, { useState } from "react";
+import { ActivityIndicator, Alert, Button, View } from "react-native";
 import { PersonaProvider } from "../constants/providers";
-import { usePersona } from "../hooks/usePersona"; // Corrected relative path
+import { usePersona } from "../hooks/PersonaContext"; // Corrected relative path
 import { generatePersonaScore } from "../services/scoreEngine"; // Corrected relative path
 
 const APP_ID = process.env.EXPO_PUBLIC_RECLAIM_APP_ID!;

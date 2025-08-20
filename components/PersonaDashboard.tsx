@@ -1,15 +1,15 @@
 // components/PersonaDashboard.tsx
-import React, { useState, useCallback } from "react";
+import React from "react";
 import {
-  View,
-  Text,
   ActivityIndicator,
   Button,
   StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
+import { usePersona } from "@/hooks/PersonaContext";
 import { router } from "expo-router";
-import { usePersona } from "@/hooks/usePersona";
 
 const DOCUSTORE_ADDRESS = process.env.EXPO_PUBLIC_DOCUSTORE_CONTRACT_ADDRESS!;
 
