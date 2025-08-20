@@ -1,7 +1,6 @@
 // components/ReclaimVerifyButton.tsx
 import React, { useState } from "react";
 import { Button, Alert, ActivityIndicator, View } from "react-native";
-// CORRECTED: Do NOT import Request, Proof, or any other types.
 import { ReclaimVerification } from "@reclaimprotocol/inapp-rn-sdk";
 import {
   useAbstraxionAccount,
@@ -9,7 +8,8 @@ import {
   useAbstraxionClient,
 } from "@burnt-labs/abstraxion-react-native";
 import { PersonaProvider } from "../constants/providers";
-import { usePersona } from "@/hooks/usePersona";
+import { usePersona } from "../hooks/usePersona"; // Corrected relative path
+import { generatePersonaScore } from "../services/scoreEngine"; // Corrected relative path
 
 const APP_ID = process.env.EXPO_PUBLIC_RECLAIM_APP_ID!;
 const APP_SECRET = process.env.EXPO_PUBLIC_RECLAIM_APP_SECRET!;
@@ -29,50 +29,35 @@ export const ReclaimVerifyButton: React.FC<ReclaimVerifyButtonProps> = ({
   const { data: account } = useAbstraxionAccount();
   const { client: signingClient } = useAbstraxionSigningClient();
   const { client: queryClient } = useAbstraxionClient();
-  const [status, setStatus] = useState<"idle" | "verifying" | "updating">(
-    "idle"
-  );
+  const [status, setStatus] = useState<
+    "idle" | "verifying" | "scoring" | "updating"
+  >("idle");
 
-  // Use the hook to get the current persona state
   const { persona } = usePersona();
 
   const handleVerification = async () => {
     if (!account?.bech32Address || !signingClient || !queryClient) {
-      return Alert.alert(
-        "Error",
-        "Wallet not connected or client not ready. Please try again."
-      );
+      return Alert.alert("Error", "Client not ready. Please try again.");
     }
 
     setStatus("verifying");
     try {
-      // CORRECTED: Create the request object inline, without a type annotation.
-      // TypeScript will infer the type from the startVerification method's signature.
       const verificationResult = await reclaimVerification.startVerification({
         appId: APP_ID,
         secret: APP_SECRET,
         providerId: provider.id,
       });
 
-      if (
-        !verificationResult.proofs ||
-        verificationResult.proofs.length === 0
-      ) {
+      if (!verificationResult.proofs?.length) {
         throw new Error("Verification did not return any proofs.");
       }
-
+      console.log("Verification Result:", verificationResult);
+      console.log("Verification Result Proofs:", verificationResult.proofs);
       await updateDocuStore(verificationResult.proofs, account.bech32Address);
     } catch (error: any) {
       if (error instanceof ReclaimVerification.ReclaimVerificationException) {
-        switch (error.type) {
-          case ReclaimVerification.ExceptionType.Cancelled:
-            Alert.alert("Cancelled", "Verification was cancelled by the user.");
-            break;
-          default:
-            Alert.alert(
-              "Verification Failed",
-              error.message || "An unknown Reclaim error occurred."
-            );
+        if (error.type !== ReclaimVerification.ExceptionType.Cancelled) {
+          Alert.alert("Verification Failed", error.message);
         }
       } else {
         Alert.alert("Error", error.message || "Could not start verification.");
@@ -82,52 +67,92 @@ export const ReclaimVerifyButton: React.FC<ReclaimVerifyButtonProps> = ({
   };
 
   const updateDocuStore = async (proofs: any[], userAddress: string) => {
-    setStatus("updating");
+    // This query in the `usePersona` hook is sufficient. We can use the cached persona state.
+    const existingPersona = persona || { verifications: {} };
+
     try {
-      let existingPersona: any = {};
-      try {
-        const res = await queryClient!.queryContractSmart(DOCUSTORE_ADDRESS, {
-          read: { collection: "personas", document_id: userAddress }, // 'read' still uses 'document_id'
-        });
-        if (res.data) existingPersona = JSON.parse(res.data);
-      } catch (e) {
-        /* New user, no existing persona. This is fine. */
-      }
-
       const proof = proofs[0];
-      let newData = {};
+      let newVerificationData = {};
 
-      if (provider.id === "e6fe962d-8b4e-4ce5-abcc-3d21c88bd64a") {
-        // Twitter
-        const contextData = JSON.parse(proof.claimData.context);
-        const params = contextData.extractedParameters;
-        newData = {
-          twitter: {
-            followers: parseInt(params.followers_count, 10),
-            verifiedAt: new Date().toISOString(),
-          },
-        };
+      // The parameters are a stringified JSON, so we must parse them first.
+      // 1. Parse the parameters string, as confirmed by your log.
+      const parsedParams = JSON.parse(proof.claimData.parameters);
+      // 2. Access the nested `paramValues` object inside the parsed result.
+      const params = parsedParams.paramValues;
+      console.log("Parsed Parameters:", params);
+      switch (provider.key) {
+        case "twitter":
+          newVerificationData = {
+            twitter: {
+              followers: parseInt(params.followers_count, 10),
+              screenName: params.screen_name,
+              createdAt: params.created_at,
+              verifiedAt: new Date().toISOString(),
+            },
+          };
+          break;
+        case "github":
+          newVerificationData = {
+            github: {
+              username: params.username,
+              followers: parseInt(params.followers),
+              contributionsLastYear: parseInt(params.contributionsLastYear),
+              verifiedAt: new Date().toISOString(),
+            },
+          };
+          break;
+        case "binance":
+          newVerificationData = {
+            binance: {
+              kycStatus: params.KYC_status,
+              verifiedAt: new Date().toISOString(),
+            },
+          };
+          break;
+        case "linkedin":
+          newVerificationData = {
+            linkedin: {
+              headline: params.linkedinUserData.hero.headline,
+              connections: params.linkedinUserData.hero.connections,
+              verifiedAt: new Date().toISOString(),
+            },
+          };
+          break;
+        case "twitterTweets":
+          newVerificationData = {
+            twitterTweets: {
+              tweetCount: params.last20tweets.length,
+              latestTweetDate: params.last20tweets[0]?.createdAt,
+              verifiedAt: new Date().toISOString(),
+            },
+          };
+          break;
+        default:
+          throw new Error(`Provider key "${provider.key}" not handled.`);
       }
-      // ... Add other provider cases here
 
-      const updatedPersona = {
-        ...existingPersona,
-        ...newData,
+      const updatedVerifications = {
+        ...existingPersona.verifications,
+        ...newVerificationData,
+      };
+
+      setStatus("scoring");
+      const personaScore = await generatePersonaScore(updatedVerifications);
+
+      const finalPersonaDocument = {
+        verifications: updatedVerifications,
+        personaScore,
         lastUpdatedAt: new Date().toISOString(),
       };
 
-      // --- THIS IS THE CRITICAL FIX ---
-      // The command must be "Set" (with a capital S)
-      // The document identifier key must be "document"
+      setStatus("updating");
       const writeMsg = {
         Set: {
           collection: "personas",
-          document: userAddress, // Correct key is "document"
-          data: JSON.stringify(updatedPersona),
+          document: userAddress,
+          data: JSON.stringify(finalPersonaDocument),
         },
       };
-      // --- END OF FIX ---
-
       await signingClient!.execute(
         userAddress,
         DOCUSTORE_ADDRESS,
@@ -138,11 +163,7 @@ export const ReclaimVerifyButton: React.FC<ReclaimVerifyButtonProps> = ({
       Alert.alert("Success!", "Your Persona has been updated on-chain.");
       onVerificationComplete();
     } catch (error: any) {
-      console.error("Error during updateDocuStore:", error);
-      Alert.alert(
-        "Blockchain Error",
-        error.message || "Failed to update your persona."
-      );
+      Alert.alert("Update Error", error.message || "Failed to update persona.");
     } finally {
       setStatus("idle");
     }
@@ -150,14 +171,16 @@ export const ReclaimVerifyButton: React.FC<ReclaimVerifyButtonProps> = ({
 
   const getButtonTitle = () => {
     if (status === "verifying") return "Follow instructions...";
+    if (status === "scoring") return "Calculating Score...";
     if (status === "updating") return "Saving to Blockchain...";
 
-    // THIS IS THE NEW LOGIC
-    // Check if the persona object exists and has a key for the current provider
-    const isAlreadyVerified = persona && persona[provider.key];
+    // --- THIS IS THE CORRECTED LOGIC ---
+    // Check if the persona object exists, then check the nested verifications object.
+    const isAlreadyVerified =
+      persona && persona.verifications && persona.verifications[provider.key];
 
     return isAlreadyVerified
-      ? `Reverify ${provider.name}`
+      ? `Re-Verify ${provider.name}`
       : `Verify with ${provider.name}`;
   };
 
