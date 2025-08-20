@@ -1,30 +1,27 @@
+// app/_layout.tsx
 import "../global.css"
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import "react-native-reanimated";
+import "react-native-get-random-values";
+import { Stack } from "expo-router";
+import { AbstraxionProvider } from "@burnt-labs/abstraxion-react-native";
+import { Buffer } from "buffer";
+import crypto from "react-native-quick-crypto";
+global.crypto = crypto;
+global.Buffer = Buffer;
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+const treasuryConfig = {
+  treasury: process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS!,
+  rpcUrl: process.env.EXPO_PUBLIC_RPC_ENDPOINT,
+  restUrl: process.env.EXPO_PUBLIC_REST_ENDPOINT,
+  callbackUrl: "personapp://", // From app.json scheme
+};
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <AbstraxionProvider config={treasuryConfig}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    </AbstraxionProvider>
   );
 }
