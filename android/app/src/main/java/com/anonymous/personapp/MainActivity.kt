@@ -1,4 +1,4 @@
-package com.anonymous.proofofpersonaapp
+package com.anonymous.personapp
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

@@ -5,7 +5,7 @@ import { useAbstraxionAccount } from '@burnt-labs/abstraxion-react-native';
 import { PersonaDashboard } from '../../components/PersonaDashboard';
 
 export default function DashboardScreen() {
-    const { data: account, login, isConnected, isConnecting } = useAbstraxionAccount();
+    const { data: account, isConnected, login, isConnecting } = useAbstraxionAccount();
 
     if (!isConnected) {
         return (

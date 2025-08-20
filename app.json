@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.personapp"
     },
     "android": {
       "adaptiveIcon": {
@@ -26,6 +27,7 @@
     },
     "plugins": [
       "expo-router",
+      "@reclaimprotocol/inapp-rn-sdk",
       [
         "expo-splash-screen",
         {

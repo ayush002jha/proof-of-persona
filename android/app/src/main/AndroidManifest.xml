@@ -24,8 +24,10 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:scheme="proofofpersonaapp"/>
+        <data android:scheme="personapp"/>
+        <data android:scheme="exp+proof-of-persona-app"/>
       </intent-filter>
     </activity>
+    <activity android:name="org.reclaimprotocol.inapp_sdk.ReclaimActivity" android:theme="@style/Theme.ReclaimInAppSdk.LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize"/>
   </application>
 </manifest>

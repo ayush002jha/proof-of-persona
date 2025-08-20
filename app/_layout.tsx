@@ -10,7 +10,8 @@ global.crypto = crypto;
 global.Buffer = Buffer;
 
 const treasuryConfig = {
-  treasury: process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS!,
+  treasury: process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS,
+  gasPrice: "0.001uxion", // If you feel the need to change the gasPrice when connecting to signer, set this value. Please stick to the string format seen in example
   rpcUrl: process.env.EXPO_PUBLIC_RPC_ENDPOINT,
   restUrl: process.env.EXPO_PUBLIC_REST_ENDPOINT,
   callbackUrl: "personapp://", // From app.json scheme
