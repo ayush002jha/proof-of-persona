@@ -11,7 +11,6 @@ import {
 import { usePersona } from "@/hooks/PersonaContext";
 import { router } from "expo-router";
 
-const DOCUSTORE_ADDRESS = process.env.EXPO_PUBLIC_DOCUSTORE_CONTRACT_ADDRESS!;
 
 export const PersonaDashboard = () => {
   const { persona, loading, error, fetchPersona } = usePersona();

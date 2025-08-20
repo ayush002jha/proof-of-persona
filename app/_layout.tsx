@@ -19,9 +19,9 @@ const treasuryConfig = {
 
 export default function RootLayout() {
   return (
-    <AbstraxionProvider config={treasuryConfig}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    <AbstraxionProvider config={treasuryConfig} >
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
       </Stack>
     </AbstraxionProvider>
   );

@@ -9,7 +9,7 @@ export default function TabLayout() {
     <PersonaProvider>
       <Tabs
         screenOptions={{
-          headerShown: false,
+          headerShown: true,
           tabBarActiveTintColor: "#007AFF",
           tabBarLabelStyle: { fontSize: 12, fontWeight: "600" },
         }}
