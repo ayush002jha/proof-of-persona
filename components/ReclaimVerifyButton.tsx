@@ -82,21 +82,34 @@ export const ReclaimVerifyButton: React.FC<ReclaimVerifyButtonProps> = ({
       console.log("Parsed Parameters:", params);
       switch (provider.key) {
         case "twitter":
+          // This path is correct for Twitter
+          const twitterParams = JSON.parse(
+            proof.claimData.parameters
+          ).paramValues;
           newVerificationData = {
             twitter: {
-              followers: parseInt(params.followers_count, 10),
-              screenName: params.screen_name,
-              createdAt: params.created_at,
+              followers: parseInt(twitterParams.followers_count, 10),
+              screenName: twitterParams.screen_name,
+              createdAt: twitterParams.created_at,
               verifiedAt: new Date().toISOString(),
             },
           };
           break;
+
         case "github":
+          // The GitHub data is in the top-level `publicData` object
+          const githubParams = proof.publicData;
+          if (!githubParams) {
+            throw new Error("GitHub proof is missing publicData.");
+          }
           newVerificationData = {
             github: {
-              username: params.username,
-              followers: parseInt(params.followers),
-              contributionsLastYear: parseInt(params.contributionsLastYear),
+              username: githubParams.username,
+              followers: parseInt(githubParams.followers, 10),
+              contributionsLastYear: parseInt(
+                githubParams.contributionsLastYear,
+                10
+              ),
               verifiedAt: new Date().toISOString(),
             },
           };
@@ -110,19 +123,45 @@ export const ReclaimVerifyButton: React.FC<ReclaimVerifyButtonProps> = ({
           };
           break;
         case "linkedin":
+          // 1. Access the top-level publicData object
+          const linkedinPublicData = proof.publicData;
+          if (!linkedinPublicData || !linkedinPublicData.linkedinUserData) {
+            throw new Error(
+              "LinkedIn proof is missing publicData.linkedinUserData."
+            );
+          }
+
+          // 2. The user data is inside the linkedinUserData property
+          const userData = linkedinPublicData.linkedinUserData;
+
+          // 3. Extract the specific fields we need from the "hero" section
           newVerificationData = {
             linkedin: {
-              headline: params.linkedinUserData.hero.headline,
-              connections: params.linkedinUserData.hero.connections,
+              headline: userData.hero.headline,
+              connections: userData.hero.connections,
+              fullName: userData.hero.fullName,
+              geoLocation: userData.hero.geoLocation,
               verifiedAt: new Date().toISOString(),
             },
           };
           break;
         case "twitterTweets":
+          // 1. Access the top-level publicData object
+          const tweetsPublicData = proof.publicData;
+          if (!tweetsPublicData || !tweetsPublicData.last20tweets) {
+            throw new Error("Twitter Tweets proof is missing publicData.");
+          }
+
+          // 2. Extract the data we want to store on-chain
+          const last20Tweets = tweetsPublicData.last20tweets;
+
+          // 3. We can store a summary to save space and gas, rather than the full tweets
           newVerificationData = {
             twitterTweets: {
-              tweetCount: params.last20tweets.length,
-              latestTweetDate: params.last20tweets[0]?.createdAt,
+              tweetCount: last20Tweets.length,
+              // Get the date of the most recent tweet to prove activity
+              latestTweetDate:
+                last20Tweets.length > 0 ? last20Tweets[0].createdAt : null,
               verifiedAt: new Date().toISOString(),
             },
           };
