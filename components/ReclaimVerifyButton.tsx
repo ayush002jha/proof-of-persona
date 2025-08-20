@@ -9,6 +9,7 @@ import {
   useAbstraxionClient,
 } from "@burnt-labs/abstraxion-react-native";
 import { PersonaProvider } from "../constants/providers";
+import { usePersona } from "@/hooks/usePersona";
 
 const APP_ID = process.env.EXPO_PUBLIC_RECLAIM_APP_ID!;
 const APP_SECRET = process.env.EXPO_PUBLIC_RECLAIM_APP_SECRET!;
@@ -31,6 +32,9 @@ export const ReclaimVerifyButton: React.FC<ReclaimVerifyButtonProps> = ({
   const [status, setStatus] = useState<"idle" | "verifying" | "updating">(
     "idle"
   );
+
+  // Use the hook to get the current persona state
+  const { persona } = usePersona();
 
   const handleVerification = async () => {
     if (!account?.bech32Address || !signingClient || !queryClient) {
@@ -78,28 +82,40 @@ export const ReclaimVerifyButton: React.FC<ReclaimVerifyButtonProps> = ({
   };
 
   const updateDocuStore = async (proofs: any[], userAddress: string) => {
-    setStatus('updating');
+    setStatus("updating");
     try {
       let existingPersona: any = {};
       try {
         const res = await queryClient!.queryContractSmart(DOCUSTORE_ADDRESS, {
-            read: { collection: "personas", document_id: userAddress }, // 'read' still uses 'document_id'
+          read: { collection: "personas", document_id: userAddress }, // 'read' still uses 'document_id'
         });
         if (res.data) existingPersona = JSON.parse(res.data);
-      } catch (e) { /* New user, no existing persona. This is fine. */ }
-      
+      } catch (e) {
+        /* New user, no existing persona. This is fine. */
+      }
+
       const proof = proofs[0];
       let newData = {};
 
-      if (provider.id === 'e6fe962d-8b4e-4ce5-abcc-3d21c88bd64a') { // Twitter
+      if (provider.id === "e6fe962d-8b4e-4ce5-abcc-3d21c88bd64a") {
+        // Twitter
         const contextData = JSON.parse(proof.claimData.context);
         const params = contextData.extractedParameters;
-        newData = { twitter: { followers: parseInt(params.followers_count, 10), verifiedAt: new Date().toISOString() } };
+        newData = {
+          twitter: {
+            followers: parseInt(params.followers_count, 10),
+            verifiedAt: new Date().toISOString(),
+          },
+        };
       }
       // ... Add other provider cases here
-      
-      const updatedPersona = { ...existingPersona, ...newData, lastUpdatedAt: new Date().toISOString() };
-      
+
+      const updatedPersona = {
+        ...existingPersona,
+        ...newData,
+        lastUpdatedAt: new Date().toISOString(),
+      };
+
       // --- THIS IS THE CRITICAL FIX ---
       // The command must be "Set" (with a capital S)
       // The document identifier key must be "document"
@@ -107,27 +123,42 @@ export const ReclaimVerifyButton: React.FC<ReclaimVerifyButtonProps> = ({
         Set: {
           collection: "personas",
           document: userAddress, // Correct key is "document"
-          data: JSON.stringify(updatedPersona)
-        }
+          data: JSON.stringify(updatedPersona),
+        },
       };
       // --- END OF FIX ---
 
-      await signingClient!.execute(userAddress, DOCUSTORE_ADDRESS, writeMsg, "auto");
-      
-      Alert.alert('Success!', 'Your Persona has been updated on-chain.');
-      onVerificationComplete();
+      await signingClient!.execute(
+        userAddress,
+        DOCUSTORE_ADDRESS,
+        writeMsg,
+        "auto"
+      );
 
+      Alert.alert("Success!", "Your Persona has been updated on-chain.");
+      onVerificationComplete();
     } catch (error: any) {
-        console.error("Error during updateDocuStore:", error);
-        Alert.alert('Blockchain Error', error.message || 'Failed to update your persona.');
+      console.error("Error during updateDocuStore:", error);
+      Alert.alert(
+        "Blockchain Error",
+        error.message || "Failed to update your persona."
+      );
     } finally {
-        setStatus('idle');
+      setStatus("idle");
     }
   };
+
   const getButtonTitle = () => {
     if (status === "verifying") return "Follow instructions...";
     if (status === "updating") return "Saving to Blockchain...";
-    return `Verify with ${provider.name}`;
+
+    // THIS IS THE NEW LOGIC
+    // Check if the persona object exists and has a key for the current provider
+    const isAlreadyVerified = persona && persona[provider.key];
+
+    return isAlreadyVerified
+      ? `Reverify ${provider.name}`
+      : `Verify with ${provider.name}`;
   };
 
   return (

@@ -7,83 +7,18 @@ import {
   Button,
   StyleSheet,
 } from "react-native";
-import {
-  useAbstraxionAccount,
-  useAbstraxionClient,
-} from "@burnt-labs/abstraxion-react-native";
-import { useFocusEffect, router } from "expo-router";
+
+import { router } from "expo-router";
+import { usePersona } from "@/hooks/usePersona";
 
 const DOCUSTORE_ADDRESS = process.env.EXPO_PUBLIC_DOCUSTORE_CONTRACT_ADDRESS!;
 
 export const PersonaDashboard = () => {
-  const { data: account } = useAbstraxionAccount();
-  const { client: queryClient } = useAbstraxionClient();
-  const [persona, setPersona] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchPersona = useCallback(async () => {
-    if (!queryClient || !account?.bech32Address) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    console.log("Dashboard: Fetching persona for", account.bech32Address);
-
-    try {
-      const queryMsg = {
-        UserDocuments: {
-          owner: account.bech32Address,
-          collection: "personas",
-        },
-      };
-
-      // This response object has the structure { documents: [...] }
-      const response = await queryClient.queryContractSmart(
-        DOCUSTORE_ADDRESS,
-        queryMsg
-      );
-
-      console.log("Dashboard: Received raw response:", response);
-
-      // --- THIS IS THE FINAL, CORRECTED PARSING LOGIC ---
-      // Access `response.documents` directly, not `response.data.documents`
-      if (response && response.documents && response.documents.length > 0) {
-        const userDocTuple = response.documents.find(
-          (doc: [string, any]) => doc[0] === account.bech32Address
-        );
-
-        // The persona JSON is in the nested "data" property of the document object
-        if (userDocTuple && userDocTuple[1] && userDocTuple[1].data) {
-          setPersona(JSON.parse(userDocTuple[1].data));
-        } else {
-          setPersona(null);
-        }
-      } else {
-        setPersona(null);
-      }
-      // --- END OF FIX ---
-    } catch (err: any) {
-      console.error("Dashboard: Error fetching persona:", err);
-      setError("Could not fetch persona. It might not be created yet.");
-      setPersona(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [queryClient, account?.bech32Address]);
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchPersona();
-    }, [fetchPersona])
-  );
+  const { persona, loading, error, fetchPersona } = usePersona();
 
   if (loading) {
     return <ActivityIndicator size="large" style={styles.container} />;
   }
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>My On-Chain Persona</Text>
