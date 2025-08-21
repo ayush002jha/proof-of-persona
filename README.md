@@ -11,7 +11,7 @@ Proof of Persona is a decentralized identity platform built on the XION blockcha
 ### App Showcase
 
 <p align="center">
-  <img alt="Proof of Persona App Showcase" src="./assets/app-showcase.png" width="300"/>
+  <img alt="Proof of Persona App Showcase" src="./assets/app-showcase.png" />
 </p>
 
 ---
