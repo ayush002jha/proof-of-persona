@@ -6,7 +6,7 @@ const genAI = new GoogleGenAI({ apiKey: API_KEY });
 
 export async function generatePersonaScore(verifications: any): Promise<any> {
   let promptData =
-    "Analyze the following verified user data to generate a 'Persona Score' out of 100.\n";
+    "Analyze the following verified user data to generate a 'Persona Score' out of 100 which will be average of all categories you give score for.\n";
   promptData +=
     "Provide a score, a breakdown into four categories, and a short, encouraging explanation.\n";
   promptData +=

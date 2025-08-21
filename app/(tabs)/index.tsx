@@ -36,22 +36,27 @@ export default function DashboardScreen() {
         }
       >
         <View className="p-5 items-center w-full">
-          <View className="w-full flex-row justify-between items-center mb-2">
-            {/* <Text className="text-3xl font-bold">My Dashboard</Text> */}
-            {/* We use a custom styled button for logout now */}
+          {/* <View className="w-full flex-row justify-between items-center mb-2">
+            <Text className="text-3xl font-bold">My Dashboard</Text>
             <Pressable
               onPress={() => logout()}
               className="bg-red-500 px-4 py-2 rounded-full"
             >
               <Text className="text-white font-bold">Logout</Text>
             </Pressable>
+          </View> */}
+          <View className="w-full p-4 ">
+            <Text className="text-xl mb-2" >Wallet Address</Text>
+            <Text
+              className="text-sm text-gray-500 break-all text-center"
+            //   numberOfLines={1}
+            //   ellipsizeMode="middle"
+              selectable
+              style={{ width: "100%" , color: "#3b82f6" }} // Tailwind blue-500
+            >
+              {account?.bech32Address} 
+            </Text>
           </View>
-          <Text
-            className="text-sm text-gray-500 break-all text-center mb-4"
-            selectable
-          >
-            {account?.bech32Address}
-          </Text>
 
           <PersonaDashboard />
         </View>

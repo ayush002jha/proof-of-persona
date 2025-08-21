@@ -97,7 +97,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="verify"
           options={{
-            title: "Verify Credentials",
+            title: "Connect accounts",
             tabBarLabel: ({ focused, color }) => (
               <Text
                 style={{
