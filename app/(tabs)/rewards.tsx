@@ -5,97 +5,55 @@ import {
   Text,
   SafeAreaView,
   ScrollView,
+  ActivityIndicator,
   StyleSheet,
-  Button,
-  Alert,
 } from "react-native";
+import { RewardCard } from "../../components/RewardCard"; // Import the new card
 import { usePersona } from "@/hooks/PersonaContext";
-interface RewardCardProps {
-  title: string;
-  description: string;
-  requiredScore: number;
-  userScore: number;
-}
-
-const RewardCard: React.FC<RewardCardProps> = ({
-  title,
-  description,
-  requiredScore,
-  userScore,
-}) => {
-  const isEligible = userScore >= requiredScore;
-
-  const handleClaim = () => {
-    if (isEligible) {
-      Alert.alert(
-        "Success!",
-        `You have successfully claimed the "${title}" reward.`
-      );
-    } else {
-      Alert.alert(
-        "Ineligible",
-        `You need a Persona Score of ${requiredScore} to claim this reward.`
-      );
-    }
-  };
-
-  return (
-    <View style={[styles.card, !isEligible && styles.disabledCard]}>
-      <Text style={styles.cardTitle}>{title}</Text>
-      <Text style={styles.cardDescription}>{description}</Text>
-      <View style={styles.eligibilityContainer}>
-        <Text style={isEligible ? styles.eligibleText : styles.ineligibleText}>
-          {isEligible ? "✅ Eligible" : `❌ Requires Score: ${requiredScore}`}
-        </Text>
-        <Text>Your Score: {userScore}</Text>
-      </View>
-      <Button
-        title={isEligible ? "Claim Reward" : "Not Eligible"}
-        onPress={handleClaim}
-        disabled={!isEligible}
-      />
-    </View>
-  );
-};
-
 export default function RewardsScreen() {
   const { persona, loading } = usePersona();
   const userScore = persona?.personaScore?.score || 0;
 
+  // Updated dummy data to include image URLs
   const dummyRewards = [
     {
-      title: "Exclusive Community Chat",
-      description: "Join a private chat with other high-reputation members.",
+      title: "Guaranteed Airdrop Slot",
+      description:
+        "Secure a guaranteed spot in the next major partner airdrop. Your high reputation means you're a valued community member.",
+      requiredScore: 60,
+      imageUrl:
+        "https://images.unsplash.com/photo-1642239817310-e87f49fbb561?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Abstract image representing airdrops/gifts
+    },
+    {
+      title: "VIP Alpha Group",
+      description:
+        "Get access to a private, token-gated chat with top analysts and builders in the ecosystem. Discuss trends before they go mainstream.",
+      requiredScore: 85,
+      imageUrl:
+        "https://images.unsplash.com/photo-1605564538285-b045ecdf46b3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Abstract image representing data/alpha
+    },
+    {
+      title: "Early Contributor Access",
+      description:
+        "Join the private Discord for our next project and get an 'Early Contributor' role before it's announced to the public.",
       requiredScore: 50,
-    },
-    {
-      title: "Early Access Pass",
-      description: "Get early access to the next big feature.",
-      requiredScore: 75,
-    },
-    {
-      title: "Airdrop Multiplier",
-      description: "Receive a 2x multiplier on the next partner airdrop.",
-      requiredScore: 90,
+      imageUrl: "https://images.unsplash.com/photo-1614680376739-414d95ff43df?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Abstract image representing community/contribution
     },
   ];
 
   if (loading) {
     return (
-      <SafeAreaView>
-        <Text>Loading...</Text>
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" />
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.headerTitle}>Exclusive Rewards</Text>
-        <Text style={styles.subHeader}>
-          Improve your Persona Score by adding more verifications to unlock new
-          opportunities.
-        </Text>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {/* <Text style={styles.headerTitle}>Exclusive Rewards</Text> */}
+
         {dummyRewards.map((reward) => (
           <RewardCard key={reward.title} {...reward} userScore={userScore} />
         ))}
@@ -105,36 +63,13 @@ export default function RewardsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#fff" },
-  container: { padding: 20, paddingTop: 40 },
-  headerTitle: { fontSize: 32, fontWeight: "bold", marginBottom: 8 },
-  subHeader: { fontSize: 16, color: "#666", marginBottom: 24 },
-  card: {
-    backgroundColor: "#f8f9fa",
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#e9ecef",
-  },
-  disabledCard: {
-    backgroundColor: "#e9ecef",
-    opacity: 0.7,
-  },
-  cardTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 8 },
-  cardDescription: { fontSize: 14, color: "#495057", marginBottom: 16 },
-  eligibilityContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-    padding: 1,
-  },
-  eligibleText: {
-    color: "#28a745",
+  safeArea: { flex: 1, backgroundColor: "#f0f2f5" }, // A light gray background
+  scrollContainer: { padding: 20, paddingTop: 10, paddingBottom: 120 }, // Added paddingBottom
+  container: { flex: 1, justifyContent: "center", alignItems: "center" },
+  headerTitle: {
+    fontSize: 28,
     fontWeight: "bold",
-  },
-  ineligibleText: {
-    color: "#dc3545",
-    fontWeight: "bold",
+    marginBottom: 24,
+    color: "#1f2937",
   },
 });
