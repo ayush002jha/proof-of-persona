@@ -119,7 +119,7 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="rewards"
+          name="(rewards)"
           options={{
             title: "Exclusive Rewards",
             tabBarLabel: ({ focused, color }) => (
@@ -140,6 +140,7 @@ export default function TabLayout() {
                 color={color}
               />
             ),
+            // headerShown:false
           }}
         />
       </Tabs>
