@@ -1,14 +1,17 @@
 // components/RewardCard.tsx
 import React from "react";
 import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface RewardCardProps {
   title: string;
   description: string;
   requiredScore: number;
   userScore: number;
-  imageUrl: string; // Add an image URL prop
+  imageUrl: string;
   value: string;
+  isOwner: boolean; // Is the current user the creator?
+  onDelete?: () => void; // Optional function to handle deletion
 }
 
 export const RewardCard: React.FC<RewardCardProps> = ({
@@ -18,6 +21,8 @@ export const RewardCard: React.FC<RewardCardProps> = ({
   userScore,
   imageUrl,
   value,
+  isOwner,
+  onDelete,
 }) => {
   const isEligible = userScore >= requiredScore;
 
@@ -34,9 +39,8 @@ export const RewardCard: React.FC<RewardCardProps> = ({
 
   return (
     <View
-      className={`bg-white rounded-2xl shadow-lg border border-gray-100 mb-6 overflow-hidden ${!isEligible ? "opacity-60" : ""}`}
+      className={`bg-white rounded-2xl shadow-lg border border-gray-100 mb-6 overflow-hidden ${!isEligible && !isOwner ? "opacity-60" : ""}`}
     >
-      {/* Image Section */}
       <View className="relative">
         <Image source={{ uri: imageUrl }} className="w-full h-40" />
         <View className="absolute top-3 right-3 bg-blue-500/90 px-3 py-1 rounded-full">
@@ -44,9 +48,17 @@ export const RewardCard: React.FC<RewardCardProps> = ({
             Requires Score {requiredScore}+
           </Text>
         </View>
+        {/* Show a delete button if the user is the owner */}
+        {isOwner && onDelete && (
+          <TouchableOpacity
+            onPress={onDelete}
+            className="absolute top-2 left-2 p-2 bg-black/50 rounded-full"
+          >
+            <Ionicons name="trash-bin-outline" size={24} color="white" />
+          </TouchableOpacity>
+        )}
       </View>
 
-      {/* Content Section */}
       <View className="p-5">
         <Text className="text-xl font-bold text-gray-800 mb-2">{title}</Text>
         <Text className="text-base text-gray-600 mb-5">{description}</Text>

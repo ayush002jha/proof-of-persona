@@ -257,6 +257,7 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
                 multiline
                 textAlignVertical="top"
               />
+
               <Text className="text-base font-medium text-gray-600 mb-2">
                 Reward Value (Link, Code, etc.)
               </Text>
@@ -267,6 +268,7 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
                 className="bg-gray-100 border border-gray-300 text-base p-3 rounded-lg mb-4"
                 autoCapitalize="none"
               />
+              
               <Text className="text-base font-medium text-gray-600 mb-2">
                 Image URL (auto-generated from title)
               </Text>
