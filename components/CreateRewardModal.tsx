@@ -34,41 +34,81 @@ interface CreateRewardModalProps {
   onClose: () => void;
 }
 
-const getKeywordsFromTitle = (title: string): string => {
-    const lowercasedTitle = title.toLowerCase();
-    if (lowercasedTitle.includes('crypto') || lowercasedTitle.includes('airdrop')) return 'crypto abstract';
-    if (lowercasedTitle.includes('social') || lowercasedTitle.includes('community')) return 'community network';
-    if (lowercasedTitle.includes('github') || lowercasedTitle.includes('developer') || lowercasedTitle.includes('code')) return 'code developer';
-    if (lowercasedTitle.includes('concert') || lowercasedTitle.includes('vip') || lowercasedTitle.includes('event')) return 'concert music event';
-    return 'technology abstract'; // Default fallback
+// This function now returns an array of keywords, from most to least specific
+const getKeywordTiers = (title: string): string[] => {
+  const lowercasedTitle = title.toLowerCase();
+  if (
+    lowercasedTitle.includes("crypto") ||
+    lowercasedTitle.includes("airdrop") ||
+    lowercasedTitle.includes("bitcoin")
+  ) {
+    return ["blockchain", "crypto", "abstract"];
+  }
+  if (
+    lowercasedTitle.includes("community") ||
+    lowercasedTitle.includes("chat")
+  ) {
+    return ["community", "network", "people"];
+  }
+  if (
+    lowercasedTitle.includes("github") ||
+    lowercasedTitle.includes("developer") ||
+    lowercasedTitle.includes("code")
+  ) {
+    return ["code", "developer", "programming"];
+  }
+  if (
+    lowercasedTitle.includes("concert") ||
+    lowercasedTitle.includes("vip") ||
+    lowercasedTitle.includes("event")
+  ) {
+    return ["concert", "event", "music festival"];
+  }
+  if (lowercasedTitle.includes("social")) {
+    return ["social media", "network", "people"];
+  }
+  return ["technology", "abstract", "modern"]; // Default fallback tiers
 };
 
+// This function will now try each keyword in order until it finds a good image
 const getThemedImageUrl = async (title: string): Promise<string> => {
-    if (!PEXELS_API_KEY) return ''; // Don't make a request if the key is missing
+  if (!PEXELS_API_KEY || !title) return "";
 
-    const keywords = getKeywordsFromTitle(title);
-    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(keywords)}&per_page=10`;
+  const keywordTiers = getKeywordTiers(title);
+
+  for (const keyword of keywordTiers) {
+    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(keyword)}&per_page=15&orientation=landscape`;
+    console.log(`Trying Pexels with keyword: ${keyword}`);
 
     try {
-        const response = await fetch(url, {
-            headers: {
-                Authorization: PEXELS_API_KEY,
-            },
-        });
-        if (!response.ok) {
-            console.error("Pexels API request failed:", response.status);
-            return ''; // Return empty on failure
-        }
-        const data = await response.json();
-        if (data.photos && data.photos.length > 0) {
-            // Get a random photo from the results and return a good quality version
-            const randomPhoto = data.photos[Math.floor(Math.random() * data.photos.length)];
-            return randomPhoto.src.large; // Use 'large' for good quality
-        }
+      const response = await fetch(url, {
+        headers: { Authorization: PEXELS_API_KEY },
+      });
+      if (!response.ok) {
+        console.error(
+          `Pexels API failed for keyword "${keyword}":`,
+          response.status
+        );
+        continue; // Try the next keyword
+      }
+      const data = await response.json();
+      if (data.photos && data.photos.length > 0) {
+        const randomPhoto =
+          data.photos[Math.floor(Math.random() * data.photos.length)];
+        // Return the "landscape" version which is better for cards
+        return randomPhoto.src.landscape;
+      }
     } catch (error) {
-        console.error("Error fetching image from Pexels:", error);
+      console.error(
+        `Error fetching from Pexels with keyword "${keyword}":`,
+        error
+      );
     }
-    return ''; // Return empty if anything goes wrong
+  }
+
+  // If no keywords returned an image, return an empty string
+  console.log("No images found for any keywords.");
+  return "";
 };
 
 export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
@@ -111,15 +151,17 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
   });
   // --- End of Gesture Logic ---
 
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            if (title) {
-                getThemedImageUrl(title).then(setImageUrl);
-            }
-        }, 800); // Increased debounce for API calls
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (title) {
+        getThemedImageUrl(title).then(setImageUrl);
+      } else {
+        setImageUrl(""); // Clear image if title is empty
+      }
+    }, 800); // Increased debounce for API calls
 
-        return () => clearTimeout(handler);
-    }, [title]);
+    return () => clearTimeout(handler);
+  }, [title]);
 
   const handleCreateReward = async () => {
     if (!account || !signingClient)
