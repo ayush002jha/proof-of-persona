@@ -122,7 +122,8 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
   const [requiredScore, setRequiredScore] = useState(50);
   const [imageUrl, setImageUrl] = useState(""); // Changed from "value" to "imageUrl"
   const [isLoading, setIsLoading] = useState(false);
-
+  // A separate state for the actual reward value/link
+  const [rewardValue, setRewardValue] = useState("");
   // --- Gesture and Animation State ---
   const translateY = useSharedValue(0);
   const context = useSharedValue({ y: 0 });
@@ -167,16 +168,21 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
   const handleCreateReward = async () => {
     if (!account || !signingClient)
       return Alert.alert("Error", "Client not ready.");
-    if (!title || !description || !requiredScore || !imageUrl) {
-      return Alert.alert("Error", "All fields are required.");
+    if (!title || !description || !requiredScore || !imageUrl || !rewardValue) {
+      return Alert.alert(
+        "Error",
+        "All fields, including the reward link/value, are required."
+      );
     }
     setIsLoading(true);
     try {
       const rewardId = Date.now().toString();
+      // We now save both the imageUrl and the rewardValue
       const rewardData = {
         title,
         description,
-        imageUrl,
+        imageUrl, // The visual for the card
+        value: rewardValue, // The actual reward link/code
         requiredScore: Math.round(requiredScore),
         creatorAddress: account.bech32Address,
         createdAt: new Date().toISOString(),
@@ -251,7 +257,16 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
                 multiline
                 textAlignVertical="top"
               />
-
+              <Text className="text-base font-medium text-gray-600 mb-2">
+                Reward Value (Link, Code, etc.)
+              </Text>
+              <TextInput
+                placeholder="https://t.me/private-group"
+                value={rewardValue}
+                onChangeText={setRewardValue}
+                className="bg-gray-100 border border-gray-300 text-base p-3 rounded-lg mb-4"
+                autoCapitalize="none"
+              />
               <Text className="text-base font-medium text-gray-600 mb-2">
                 Image URL (auto-generated from title)
               </Text>
