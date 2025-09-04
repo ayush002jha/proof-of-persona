@@ -38,7 +38,7 @@ export default function VerifyScreen() {
         <SafeAreaView className="flex-1 bg-gray-50">
             <View className="p-5" style={{paddingBottom: 120}}>
                 <Text className="text-base text-gray-600 mb-6">
-                    Connect your accounts to build your Persona Score. The more accounts you connect, the higher your score will be.
+                    Connect your accounts to build your Persona Score. More accounts you connect, Better your score will be.
                 </Text>
                 <FlatList
                     // 5. Use the new sortedProviders array as the data source
