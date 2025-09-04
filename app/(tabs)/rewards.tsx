@@ -1,75 +1,85 @@
 // app/(tabs)/rewards.tsx
-import React from "react";
-import {
-  View,
-  Text,
-  SafeAreaView,
-  ScrollView,
-  ActivityIndicator,
-  StyleSheet,
-} from "react-native";
-import { RewardCard } from "../../components/RewardCard"; // Import the new card
-import { usePersona } from "@/hooks/PersonaContext";
+import React, { useState, useCallback } from 'react';
+import { View, Text, SafeAreaView, ScrollView, ActivityIndicator, Modal, TouchableOpacity, RefreshControl } from 'react-native';
+import { usePersona } from '@/hooks/PersonaContext';
+import { useAbstraxionClient } from '@burnt-labs/abstraxion-react-native';
+import { useFocusEffect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { RewardCard } from '../../components/RewardCard'; // Your existing card is perfect
+import { CreateRewardModal } from '../../components/CreateRewardModal'; // Import the new modal
+
+const DOCUSTORE_ADDRESS = process.env.EXPO_PUBLIC_DOCUSTORE_CONTRACT_ADDRESS!;
+const SCORE_TO_CREATE_REWARD = 60; // Set the score threshold
+
 export default function RewardsScreen() {
-  const { persona, loading } = usePersona();
-  const userScore = persona?.personaScore?.score || 0;
+    const { persona } = usePersona();
+    const { client: queryClient } = useAbstraxionClient();
+    const [rewards, setRewards] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
+    const userScore = persona?.personaScore?.score || 0;
 
-  // Updated dummy data to include image URLs
-  const dummyRewards = [
-    {
-      title: "Guaranteed Airdrop Slot",
-      description:
-        "Secure a guaranteed spot in the next major partner airdrop. Your high reputation means you're a valued community member.",
-      requiredScore: 60,
-      imageUrl:
-        "https://images.unsplash.com/photo-1642239817310-e87f49fbb561?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Abstract image representing airdrops/gifts
-    },
-    {
-      title: "VIP Alpha Group",
-      description:
-        "Get access to a private, token-gated chat with top analysts and builders in the ecosystem. Discuss trends before they go mainstream.",
-      requiredScore: 85,
-      imageUrl:
-        "https://images.unsplash.com/photo-1605564538285-b045ecdf46b3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Abstract image representing data/alpha
-    },
-    {
-      title: "Early Contributor Access",
-      description:
-        "Join the private Discord for our next project and get an 'Early Contributor' role before it's announced to the public.",
-      requiredScore: 50,
-      imageUrl: "https://images.unsplash.com/photo-1614680376739-414d95ff43df?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Abstract image representing community/contribution
-    },
-  ];
+    const fetchRewards = useCallback(async () => {
+        if (!queryClient) return;
+        setIsLoading(true);
+        try {
+            const queryMsg = { Collection: { name: "rewards" } }; // Query the "rewards" collection
+            const response = await queryClient.queryContractSmart(DOCUSTORE_ADDRESS, queryMsg);
+            if (response && response.documents) {
+                const fetchedRewards = response.documents.map((doc: [string, any]) => JSON.parse(doc[1].data));
+                setRewards(fetchedRewards.sort((a:any, b:any) => b.requiredScore - a.requiredScore));
+            }
+        } catch (error) { console.error("Failed to fetch rewards:", error); }
+        finally { setIsLoading(false); }
+    }, [queryClient]);
 
-  if (loading) {
+    useFocusEffect(useCallback(() => { fetchRewards(); }, [fetchRewards]));
+
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await fetchRewards();
+        setRefreshing(false);
+    }, [fetchRewards]);
+
     return (
-      <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" />
-      </SafeAreaView>
+        <SafeAreaView className="flex-1 bg-gray-50">
+            <ScrollView
+                contentContainerStyle={{ padding: 20, paddingBottom: 120 }}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            >
+                <Text className="text-3xl font-bold mb-6 text-gray-800">Exclusive Rewards</Text>
+                
+                {isLoading ? <ActivityIndicator size="large" /> : rewards.length === 0 ? (
+                    <Text className="text-center text-gray-500 mt-10">No community rewards created yet. Be the first!</Text>
+                ) : (
+                    rewards.map((reward, index) => (
+                        <RewardCard key={index} {...reward} userScore={userScore} />
+                    ))
+                )}
+            </ScrollView>
+
+            {userScore >= SCORE_TO_CREATE_REWARD && (
+                <TouchableOpacity
+                    className="absolute bottom-28 right-5 w-16 h-16 rounded-full bg-blue-500 justify-center items-center shadow-lg"
+                    onPress={() => setIsModalVisible(true)}
+                >
+                    <Ionicons name="add" size={32} color="white" />
+                </TouchableOpacity>
+            )}
+
+            <Modal visible={isModalVisible} animationType="slide" transparent={true}>
+                <TouchableOpacity 
+                    className="flex-1 bg-black/40 justify-end" 
+                    activeOpacity={1} 
+                    onPressOut={() => setIsModalVisible(false)}
+                >
+                    <CreateRewardModal onClose={() => {
+                        setIsModalVisible(false);
+                        fetchRewards();
+                    }} />
+                </TouchableOpacity>
+            </Modal>
+        </SafeAreaView>
     );
-  }
-
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* <Text style={styles.headerTitle}>Exclusive Rewards</Text> */}
-
-        {dummyRewards.map((reward) => (
-          <RewardCard key={reward.title} {...reward} userScore={userScore} />
-        ))}
-      </ScrollView>
-    </SafeAreaView>
-  );
 }
-
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#f0f2f5" }, // A light gray background
-  scrollContainer: { padding: 20, paddingTop: 10, paddingBottom: 120 }, // Added paddingBottom
-  container: { flex: 1, justifyContent: "center", alignItems: "center" },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 24,
-    color: "#1f2937",
-  },
-});
