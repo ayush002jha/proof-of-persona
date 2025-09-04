@@ -41,6 +41,7 @@ export const RewardCard: React.FC<RewardCardProps> = ({
     <View
       className={`bg-white rounded-2xl shadow-lg border border-gray-100 mb-6 overflow-hidden ${!isEligible && !isOwner ? "opacity-60" : ""}`}
     >
+      {/* Image Section - This part remains the same */}
       <View className="relative">
         <Image source={{ uri: imageUrl }} className="w-full h-40" />
         <View className="absolute top-3 right-3 bg-blue-500/90 px-3 py-1 rounded-full">
@@ -48,31 +49,41 @@ export const RewardCard: React.FC<RewardCardProps> = ({
             Requires Score {requiredScore}+
           </Text>
         </View>
-        {/* Show a delete button if the user is the owner */}
-        {isOwner && onDelete && (
-          <TouchableOpacity
-            onPress={onDelete}
-            className="absolute top-2 left-2 p-2 bg-black/50 rounded-full"
-          >
-            <Ionicons name="trash-bin-outline" size={24} color="white" />
-          </TouchableOpacity>
-        )}
       </View>
 
+      {/* Content Section */}
       <View className="p-5">
         <Text className="text-xl font-bold text-gray-800 mb-2">{title}</Text>
         <Text className="text-base text-gray-600 mb-5">{description}</Text>
 
-        <TouchableOpacity
-          className={`py-3 rounded-lg items-center ${isEligible ? "bg-blue-500" : "bg-gray-300"}`}
-          onPress={handleAccess}
-        >
-          <Text
-            className={`font-bold text-base ${isEligible ? "text-white" : "text-gray-500"}`}
+        {/* --- THIS IS THE CORRECTED LOGIC --- */}
+        {isOwner ? (
+          // If the user is the owner, show a Delete button
+          <TouchableOpacity
+            className="py-3 rounded-lg items-center bg-red-500"
+            onPress={onDelete} // The onPress calls the onDelete function
           >
-            {isEligible ? "Access Now" : `Score ${requiredScore}+ Required`}
-          </Text>
-        </TouchableOpacity>
+            <View className="flex-row items-center">
+              <Ionicons name="trash-bin-outline" size={20} color="white" />
+              <Text className="font-bold text-base text-white ml-2">
+                Delete My Reward
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ) : (
+          // Otherwise, show the normal Access button
+          <TouchableOpacity
+            className={`py-3 rounded-lg items-center ${isEligible ? "bg-blue-500" : "bg-gray-300"}`}
+            onPress={handleAccess}
+          >
+            <Text
+              className={`font-bold text-base ${isEligible ? "text-white" : "text-gray-500"}`}
+            >
+              {isEligible ? "Access Now" : `Score ${requiredScore}+ Required`}
+            </Text>
+          </TouchableOpacity>
+        )}
+        {/* --- END OF CORRECTION --- */}
       </View>
     </View>
   );
