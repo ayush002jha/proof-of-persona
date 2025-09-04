@@ -30,7 +30,7 @@ export default function RewardsScreen() {
                 const fetchedRewards = response.documents.map((doc: [string, any]) => JSON.parse(doc[1].data));
                 setRewards(fetchedRewards.sort((a:any, b:any) => b.requiredScore - a.requiredScore));
             }
-        } catch (error) { console.error("Failed to fetch rewards:", error); }
+        } catch (error) { console.log("Failed to fetch rewards:", error); }
         finally { setIsLoading(false); }
     }, [queryClient]);
 
@@ -47,9 +47,7 @@ export default function RewardsScreen() {
             <ScrollView
                 contentContainerStyle={{ padding: 20, paddingBottom: 120 }}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-            >
-                <Text className="text-3xl font-bold mb-6 text-gray-800">Exclusive Rewards</Text>
-                
+            >                
                 {isLoading ? <ActivityIndicator size="large" /> : rewards.length === 0 ? (
                     <Text className="text-center text-gray-500 mt-10">No community rewards created yet. Be the first!</Text>
                 ) : (
