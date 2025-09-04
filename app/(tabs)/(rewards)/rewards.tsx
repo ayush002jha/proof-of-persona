@@ -26,20 +26,24 @@ export default function RewardsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const userScore = persona?.personaScore?.score || 0;
 
-    const fetchAllRewards = useCallback(async () => {
+ const fetchAllRewards = useCallback(async () => {
     if (!queryClient) return;
     setIsLoading(true);
     try {
       const queryMsg = { Collection: { collection: "rewards" } };
-      const response = await queryClient.queryContractSmart(DOCUSTORE_ADDRESS, queryMsg);
+      const response = await queryClient.queryContractSmart(
+        DOCUSTORE_ADDRESS,
+        queryMsg
+      );
       
       // --- THIS IS THE FINAL, CORRECTED PARSING LOGIC ---
-      if (response && response.data && response.data.documents) {
-        console.log("Raw Public Rewards Response:", response);
+      // The Abstraxion SDK client returns the `documents` array at the top level.
+      if (response && response.documents) {
+        console.log("Raw Public Rewards Response (from App):", response);
 
-        const allRewards = response.data.documents.map((doc: [string, any]) => ({
+        const allRewards = response.documents.map((doc: [string, any]) => ({
           id: doc[0],
-          ...JSON.parse(doc[1].data),
+          ...JSON.parse(doc[1].data), // The actual reward data is in the nested `data` property
         }));
         
         const otherUsersRewards = allRewards.filter(
@@ -51,7 +55,8 @@ export default function RewardsScreen() {
           otherUsersRewards.sort((a:any, b:any) => b.requiredScore - a.requiredScore)
         );
       } else {
-          setRewards([]); // Handle case where collection exists but is empty
+          console.log("No documents found in the response.");
+          setRewards([]);
       }
       // --- END OF FIX ---
 
@@ -62,6 +67,7 @@ export default function RewardsScreen() {
       setIsLoading(false);
     }
   }, [queryClient, account?.bech32Address]);
+
 
   useFocusEffect(
     useCallback(() => {
