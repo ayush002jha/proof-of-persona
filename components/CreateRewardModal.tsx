@@ -10,6 +10,7 @@ import {
   Pressable,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from "react-native";
 import {
   useAbstraxionAccount,
@@ -218,7 +219,16 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
               <Text className="text-2xl font-bold text-center mb-6">
                 Create New Exclusive Reward
               </Text>
-
+              {imageUrl ? (
+                <Image
+                  source={{ uri: imageUrl }}
+                  className="w-full h-40 rounded-lg mb-4 bg-gray-200"
+                />
+              ) : (
+                <View className="w-full h-40 rounded-lg mb-4 bg-gray-200 justify-center items-center">
+                  <Text className="text-gray-500">Image will appear here</Text>
+                </View>
+              )}
               {/* --- The form fields --- */}
               <Text className="text-base font-medium text-gray-600 mb-2">
                 Title
