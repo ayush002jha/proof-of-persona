@@ -186,7 +186,7 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
         imageUrl, // The visual for the card
         value: rewardValue, // The actual reward link/code
         requiredScore: Math.round(requiredScore),
-        price: Math.round(price), // Price field added
+        price: price, // Price field added
         paidUsers: [], // Initialize with an empty array
         creatorAddress: account.bech32Address,
         createdAt: new Date().toISOString(),
@@ -215,7 +215,9 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
       setIsLoading(false);
     }
   };
-
+  useEffect(() => {
+    console.log("price updated:", price);
+  }, [price]);
   return (
     <GestureDetector gesture={gesture}>
       <Animated.View style={[animatedStyle, { width: "100%" }]}>
@@ -310,16 +312,28 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
                   style={{ flex: 1 }}
                   minimumValue={0}
                   maximumValue={100}
-                  step={1}
+                  step={0.1}
                   value={price}
-                  onValueChange={setPrice}
+                  onValueChange={(val) => setPrice(Number(val.toFixed(1)))}
                   minimumTrackTintColor="#007AFF"
                   maximumTrackTintColor="#d1d5db"
                   thumbTintColor="#007AFF"
                 />
-                <Text className="text-lg font-semibold w-12 text-right">
-                  {Math.round(price)}
-                </Text>
+                <TextInput
+                  keyboardType="numeric"
+                  value={price.toFixed(1)}
+                  onChangeText={(text) => {
+                    // Only allow numbers and one decimal
+                    const sanitized = text.replace(/[^0-9.]/g, "");
+                    const num = parseFloat(sanitized);
+                    if (!isNaN(num)) {
+                      setPrice(Number(num.toFixed(1)));
+                    } else if (sanitized === "") {
+                      setPrice(0);
+                    }
+                  }}
+                  className="text-lg font-semibold w-16 text-right"
+                />
               </View>
 
               <TouchableOpacity
