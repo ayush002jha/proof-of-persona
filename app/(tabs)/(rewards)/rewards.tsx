@@ -39,20 +39,20 @@ export default function RewardsScreen() {
       // --- THIS IS THE FINAL, CORRECTED PARSING LOGIC ---
       // The Abstraxion SDK client returns the `documents` array at the top level.
       if (response && response.documents) {
-        console.log("Raw Public Rewards Response (from App):", response);
-
-        const allRewards = response.documents.map((doc: [string, any]) => ({
-          id: doc[0],
-          ...JSON.parse(doc[1].data), // The actual reward data is in the nested `data` property
-        }));
-        
+        // Filter out the persona details document (whose key is the user's address, not a timestamp)
+        const allRewards = response.documents
+          .filter((doc: [string, any]) => !isNaN(Number(doc[0])))
+          .map((doc: [string, any]) => ({
+            id: doc[0],
+            ...JSON.parse(doc[1].data),
+          }));
+        console.log("Total rewards fetched:", allRewards.length);
         const otherUsersRewards = allRewards.filter(
-          (r:any) => r.creatorAddress !== account?.bech32Address
+          (r: any) => r.creatorAddress !== account?.bech32Address
         );
-        
-        console.log("Filtered Public Rewards:", otherUsersRewards);
+        console.log("No. of rewards after filtering:", otherUsersRewards.length);
         setRewards(
-          otherUsersRewards.sort((a:any, b:any) => b.requiredScore - a.requiredScore)
+          otherUsersRewards.sort((a: any, b: any) => b.requiredScore - a.requiredScore)
         );
       } else {
           console.log("No documents found in the response.");
