@@ -44,7 +44,7 @@ const MainAppLayout = () => {
         </TouchableOpacity>
       )}
 
-      <Modal visible={isModalVisible} animationType="slide" transparent={true}>
+      <Modal visible={isModalVisible} animationType="slide" transparent={true}         statusBarTranslucent={true} navigationBarTranslucent={true}>
         <TouchableOpacity
           className="flex-1 bg-black/40 justify-end"
           activeOpacity={1}

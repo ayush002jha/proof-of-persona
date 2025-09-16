@@ -113,7 +113,7 @@ const getThemedImageUrl = async (title: string): Promise<string> => {
 };
 
 export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
-  onClose,
+  onClose
 }) => {
   const { data: account } = useAbstraxionAccount();
   const { client: signingClient } = useAbstraxionSigningClient();
@@ -122,6 +122,8 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
   const [requiredScore, setRequiredScore] = useState(50);
   const [imageUrl, setImageUrl] = useState(""); // Changed from "value" to "imageUrl"
   const [isLoading, setIsLoading] = useState(false);
+  const [price, setPrice] = useState(40);
+
   // A separate state for the actual reward value/link
   const [rewardValue, setRewardValue] = useState("");
   // --- Gesture and Animation State ---
@@ -184,6 +186,7 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
         imageUrl, // The visual for the card
         value: rewardValue, // The actual reward link/code
         requiredScore: Math.round(requiredScore),
+        price: Math.round(price), // Price field added
         creatorAddress: account.bech32Address,
         createdAt: new Date().toISOString(),
       };
@@ -268,7 +271,7 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
                 className="bg-gray-100 border border-gray-300 text-base p-3 rounded-lg mb-4"
                 autoCapitalize="none"
               />
-              
+
               <Text className="text-base font-medium text-gray-600 mb-2">
                 Image URL (auto-generated from title)
               </Text>
@@ -298,9 +301,28 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
                   {Math.round(requiredScore)}
                 </Text>
               </View>
-
+              <Text className="text-base font-medium text-gray-600 mb-2">
+                Price (in $XION)
+              </Text>
+              <View className="flex-row items-center mb-6">
+                <Slider
+                  style={{ flex: 1 }}
+                  minimumValue={0}
+                  maximumValue={100}
+                  step={1}
+                  value={price}
+                  onValueChange={setPrice}
+                  minimumTrackTintColor="#007AFF"
+                  maximumTrackTintColor="#d1d5db"
+                  thumbTintColor="#007AFF"
+                />
+                <Text className="text-lg font-semibold w-12 text-right">
+                  {Math.round(price)}
+                </Text>
+              </View>
+         
               <TouchableOpacity
-                className={`w-full py-4 rounded-xl items-center ${isLoading ? "bg-blue-300" : "bg-blue-500"}`}
+                className={`w-3/4 mx-auto py-4 mb-4 rounded-full items-center ${isLoading ? "bg-blue-300" : "bg-blue-500"}`}
                 onPress={handleCreateReward}
                 disabled={isLoading}
               >
