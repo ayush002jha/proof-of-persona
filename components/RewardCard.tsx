@@ -183,7 +183,7 @@ export const RewardCard: React.FC<RewardCardProps> = ({
               name="chevron-forward"
               size={20}
               color="white"
-              className="me-2"
+              className=""
             />
           </TouchableOpacity>
         ) : (
