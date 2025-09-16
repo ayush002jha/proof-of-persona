@@ -157,7 +157,7 @@ export const RewardCard: React.FC<RewardCardProps> = ({
         {isOwner ? (
           // If the user is the owner, show a Delete button
           <TouchableOpacity
-            className="p-4 rounded-full items-center bg-red-500 w-fit ms-auto"
+            className="py-3 rounded-full items-center bg-red-500 w-1/2 ms-auto"
             onPress={onDelete} // The onPress calls the onDelete function
           >
             <View className="flex-row items-center">
