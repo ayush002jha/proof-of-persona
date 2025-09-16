@@ -8,7 +8,7 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import {
   useAbstraxionAccount,
   useAbstraxionSigningClient,
@@ -35,7 +35,6 @@ interface RewardCardProps {
 
 const DOCUSTORE_ADDRESS = process.env.EXPO_PUBLIC_DOCUSTORE_CONTRACT_ADDRESS!;
 
-
 export const RewardCard: React.FC<RewardCardProps> = ({
   reward,
   userScore,
@@ -55,7 +54,10 @@ export const RewardCard: React.FC<RewardCardProps> = ({
 
   const handleAccess = () => {
     if (isEligible) {
-      Alert.alert("Access Granted!", `Here is your exclusive reward: ${reward.value}`);
+      Alert.alert(
+        "Access Granted!",
+        `Here is your exclusive reward: ${reward.value}`
+      );
     } else {
       Alert.alert(
         "Access Denied",
@@ -64,68 +66,70 @@ export const RewardCard: React.FC<RewardCardProps> = ({
     }
   };
 
-const handlePayment = async () => {
-    if (!signingClient || !account) return Alert.alert("Error", "Please log in to pay.");
+  const handlePayment = async () => {
+    if (!signingClient || !account)
+      return Alert.alert("Error", "Please log in to pay.");
 
     setIsPaying(true);
     try {
-        // --- TRANSACTION 1: SEND PAYMENT TO CREATOR ---
-        const amountInUxion = (parseFloat(reward.price) * 1000000).toString();
-        const paymentResult = await signingClient.sendTokens(
-            account.bech32Address,
-            reward.creatorAddress,
-            [{ denom: 'uxion', amount: amountInUxion }],
-            "auto"
+      // --- TRANSACTION 1: SEND PAYMENT TO CREATOR ---
+      const amountInUxion = (parseFloat(reward.price) * 1000000).toString();
+      const paymentResult = await signingClient.sendTokens(
+        account.bech32Address,
+        reward.creatorAddress,
+        [{ denom: "uxion", amount: amountInUxion }],
+        "auto"
+      );
+
+      if (paymentResult.code !== 0) {
+        throw new Error(`Payment transaction failed: ${paymentResult.rawLog}`);
+      }
+
+      console.log("Payment successful, now updating paid users list...");
+
+      // --- TRANSACTION 2: ADD BUYER TO THE PAID USERS LIST ---
+      // Create the updated data object
+      const updatedRewardData = {
+        ...reward, // a prop containing all the current reward data
+        // Add the new user's address to the existing array
+        paidUsers: [...(reward.paidUsers || []), account.bech32Address],
+      };
+
+      // Create the update message
+      const updateMsg = {
+        Update: {
+          collection: "rewards",
+          document: reward.id,
+          data: JSON.stringify(updatedRewardData),
+        },
+      };
+
+      // Execute the update, signed by the BUYER.
+      // This will succeed because the collection permission for "update" is "Anyone".
+      const updateResult = await signingClient.execute(
+        account.bech32Address,
+        DOCUSTORE_ADDRESS,
+        updateMsg,
+        "auto"
+      );
+      console.log("Update result:", updateResult);
+
+      if (updateResult && updateResult.transactionHash) {
+        Alert.alert(
+          "Payment Successful!",
+          `Access Granted! Reward: ${reward.value}`
         );
-
-        if (paymentResult.code !== 0) {
-            throw new Error(`Payment transaction failed: ${paymentResult.rawLog}`);
-        }
-        
-        console.log("Payment successful, now updating paid users list...");
-
-        // --- TRANSACTION 2: ADD BUYER TO THE PAID USERS LIST ---
-        // Create the updated data object
-        const updatedRewardData = {
-            ...reward, // a prop containing all the current reward data
-            // Add the new user's address to the existing array
-            paidUsers: [...(reward.paidUsers || []), account.bech32Address]
-        };
-
-        // Create the update message
-        const updateMsg = { 
-            Update: { 
-                collection: "rewards", 
-                document: reward.id, 
-                data: JSON.stringify(updatedRewardData) 
-            } 
-        };
-        
-        // Execute the update, signed by the BUYER.
-        // This will succeed because the collection permission for "update" is "Anyone".
-        const updateResult = await signingClient.execute(
-            account.bech32Address,
-            DOCUSTORE_ADDRESS,
-            updateMsg,
-            "auto"
-        );
-        
-        if (updateResult.code !== 0) {
-           // This is a "soft fail" - the creator got paid, but the list wasn't updated.
-           // In a real app, we would have a reconciliation process. For the hackathon, an alert is fine.
-           console.error("Failed to update paidUsers list:", updateResult.rawLog);
-           Alert.alert("Payment Sent!", "Your payment was successful, but there was an issue updating the access list. Please contact support.");
-        } else {
-            Alert.alert("Payment Successful!", `Access Granted! Reward: ${reward.value}`);
-            onSuccess(); // Trigger a refresh to show the new "Access Now" state
-        }
-
+        onSuccess(); // Trigger a refresh of the UI
+      } else {
+        // This case handles any unexpected response structure.
+        throw new Error("Failed to confirm the access list update on-chain.");
+      }
     } catch (error: any) {
-        Alert.alert("An Error Occurred", error.message);
+      Alert.alert("An Error Occurred", error.message);
     } finally {
-        setIsPaying(false);
+      setIsPaying(false);
     }
-};
+  };
   return (
     <View
       className={`bg-white rounded-2xl shadow-lg border border-gray-100 mb-6 overflow-hidden `}
@@ -142,8 +146,12 @@ const handlePayment = async () => {
 
       {/* Content Section */}
       <View className="p-5">
-        <Text className="text-xl font-bold text-gray-800 mb-2">{reward.title}</Text>
-        <Text className="text-base text-gray-600 mb-5">{reward.description}</Text>
+        <Text className="text-xl font-bold text-gray-800 mb-2">
+          {reward.title}
+        </Text>
+        <Text className="text-base text-gray-600 mb-5">
+          {reward.description}
+        </Text>
 
         {/* --- THIS IS THE CORRECTED LOGIC --- */}
         {isOwner ? (
@@ -162,28 +170,43 @@ const handlePayment = async () => {
         ) : isEligible ? (
           // Otherwise, show the normal Access button
           <TouchableOpacity
-            className={`py-3 rounded-full items-center ${isEligible ? "bg-blue-500" : "bg-gray-300"}`}
+            className={`flex-row justify-center w-1/2 ms-auto py-3 rounded-full items-center bg-blue-500`}
             onPress={handleAccess}
           >
+            {hasPaid&&<MaterialIcons name="paid" size={24} color="#FFD700" className="pe-2"/>}
             <Text
               className={`font-bold text-base ${isEligible ? "text-white" : "text-gray-500"}`}
             >
-              Access Now (with score)
+              Access Now
             </Text>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color="white"
+              className="me-2"
+            />
           </TouchableOpacity>
         ) : (
           // User is NOT eligible by score, show the payment button
           <TouchableOpacity
-            className={`py-3 rounded-full items-center ${isPaying ? "bg-green-300" : "bg-green-500"}`}
+            className={`py-3 rounded-full w-1/2 ms-auto items-center justify-center flex-row ${isPaying ? "bg-green-300" : "bg-green-500"}`}
             onPress={handlePayment}
             disabled={isPaying}
           >
             {isPaying ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text className="font-bold text-base text-white">
-                Pay {reward.price} $XION to Access
-              </Text>
+              <>
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={20}
+                  color="white"
+                  className="mr-2"
+                />
+                <Text className="font-bold text-base text-white">
+                  Pay {reward.price} $XION
+                </Text>
+              </>
             )}
           </TouchableOpacity>
         )}
