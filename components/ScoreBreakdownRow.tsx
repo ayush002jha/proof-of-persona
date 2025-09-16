@@ -13,7 +13,7 @@ interface ScoreBreakdownRowProps {
 
 export const ScoreBreakdownRow: React.FC<ScoreBreakdownRowProps> = ({ iconName, label, score, color }) => {
   return (
-    <View className="bg-white p-4 rounded-xl shadow-sm mb-3">
+    <View className="bg-white p-4 mb-3 rounded-2xl shadow-md border-[0.2px]">
       <View className="flex-row items-center mb-2">
         <View className="w-10 h-10 rounded-full items-center justify-center mr-4" style={{ backgroundColor: color }}>
           <Ionicons name={iconName} size={24} color="white" />

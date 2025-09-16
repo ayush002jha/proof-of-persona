@@ -33,9 +33,9 @@ export const PersonaDashboard = () => {
   const rating = getScoreRating(score);
 
   return (
-    <View className="w-full items-center">
+    <View className="w-full items-center bg-white p-3 rounded-2xl shadow-md border-[0.2px]">
         {/* Main Score Circle - Replaced with our new component */}
-        <View className="my-6">
+        <View className="my-6 ">
             <ScoreCircle score={score} rating={rating} size={200} strokeWidth={20} />
         </View>
 
@@ -48,10 +48,10 @@ export const PersonaDashboard = () => {
             <Text className="text-xl font-bold mb-4">Score Breakdown</Text>
             {breakdown && (
                 <>
-                    <ScoreBreakdownRow label="Developer Reputation" score={breakdown.developerReputation || 0} color="#3b82f6" iconName="code-slash" />
-                    <ScoreBreakdownRow label="Social Influence" score={breakdown.socialInfluence || 0} color="#22c55e" iconName="people" />
                     <ScoreBreakdownRow label="Financial Trust" score={breakdown.financialTrust || 0} color="#8b5cf6" iconName="card" />
+                    <ScoreBreakdownRow label="Social Influence" score={breakdown.socialInfluence || 0} color="#22c55e" iconName="people" />
                     <ScoreBreakdownRow label="Professionalism" score={breakdown.professionalism || 0} color="#f97316" iconName="briefcase" />
+                    <ScoreBreakdownRow label="Developer Reputation" score={breakdown.developerReputation || 0} color="#3b82f6" iconName="code-slash" />
                 </>
             )}
         </View>

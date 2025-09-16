@@ -13,6 +13,8 @@ import {
   useAbstraxionAccount,
   useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion-react-native";
+import { router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface RewardCardProps {
   reward: {
@@ -125,14 +127,27 @@ export const RewardCard: React.FC<RewardCardProps> = ({
         throw new Error("Failed to confirm the access list update on-chain.");
       }
     } catch (error: any) {
-      Alert.alert("An Error Occurred", error.message);
+      // Check if the error message contains the specific "insufficient funds" string
+      if (
+        error.message &&
+        error.message.toLowerCase().includes("insufficient funds")
+      ) {
+        Alert.alert(
+          "Insufficient Funds",
+          "You don't have enough XION to pay for this reward. Please use the on-ramp on the dashboard to add funds to your wallet.",
+          [{ text: "OK", onPress: () => router.replace("/") }] // Add a button to redirect
+        );
+      } else {
+        // Handle all other errors normally
+        Alert.alert("Payment Failed", error.message);
+      }
     } finally {
       setIsPaying(false);
     }
   };
   return (
     <View
-      className={`bg-white rounded-2xl shadow-lg border border-gray-100 mb-6 overflow-hidden `}
+      className={`bg-white rounded-2xl   mb-6 overflow-hidden shadow-md border-[0.4px] `}
     >
       {/* Image Section - This part remains the same */}
       <View className="relative">
@@ -153,64 +168,123 @@ export const RewardCard: React.FC<RewardCardProps> = ({
           {reward.description}
         </Text>
 
-        {/* --- THIS IS THE CORRECTED LOGIC --- */}
+        {/* --- UNIFIED LINEAR GRADIENT BUTTON LOGIC --- */}
         {isOwner ? (
-          // If the user is the owner, show a Delete button
           <TouchableOpacity
-            className="py-3 rounded-full items-center bg-red-500 w-1/2 ms-auto"
-            onPress={onDelete} // The onPress calls the onDelete function
+            className="w-1/2 ms-auto"
+            onPress={onDelete}
+            disabled={isPaying}
           >
-            <View className="flex-row items-center">
+            <LinearGradient
+              colors={["#ef4444", "#dc2626", "#b91c1c"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                paddingHorizontal: 24,
+                paddingVertical: 12,
+                borderRadius: 9999,
+                shadowColor: "#ef4444",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 4,
+                elevation: 5,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Ionicons name="trash-bin-outline" size={20} color="white" />
               <Text className="font-bold text-base text-white ml-2">
                 Delete
               </Text>
-            </View>
+            </LinearGradient>
           </TouchableOpacity>
         ) : isEligible ? (
-          // Otherwise, show the normal Access button
           <TouchableOpacity
-            className={`flex-row justify-center w-1/2 ms-auto py-3 rounded-full items-center bg-blue-500`}
+            className="w-1/2 ms-auto"
             onPress={handleAccess}
+            disabled={isPaying}
           >
-            {hasPaid&&<MaterialIcons name="paid" size={24} color="#FFD700" className="pe-2"/>}
-            <Text
-              className={`font-bold text-base ${isEligible ? "text-white" : "text-gray-500"}`}
+            <LinearGradient
+              colors={["#3b82f6", "#2563eb", "#1d4ed8"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                paddingHorizontal: 24,
+                paddingVertical: 12,
+                borderRadius: 9999,
+                shadowColor: "#3b82f6",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 4,
+                elevation: 5,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              Access Now
-            </Text>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color="white"
-              className=""
-            />
+              {hasPaid && (
+                <MaterialIcons
+                  name="paid"
+                  size={24}
+                  color="#FFD700"
+                  style={{ marginRight: 8 }}
+                />
+              )}
+              <Text className="font-bold text-base text-white">
+                Access Now
+              </Text>
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color="white"
+                style={{ marginLeft: 8 }}
+              />
+            </LinearGradient>
           </TouchableOpacity>
         ) : (
-          // User is NOT eligible by score, show the payment button
           <TouchableOpacity
-            className={`py-3 rounded-full w-1/2 ms-auto items-center justify-center flex-row ${isPaying ? "bg-green-300" : "bg-green-500"}`}
+            className="w-1/2 ms-auto"
             onPress={handlePayment}
             disabled={isPaying}
           >
-            {isPaying ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <>
-                <Ionicons
-                  name="lock-closed-outline"
-                  size={20}
-                  color="white"
-                  className="mr-2"
-                />
-                <Text className="font-bold text-base text-white">
-                  Pay {reward.price} $XION
-                </Text>
-              </>
-            )}
+            <LinearGradient
+              colors={["#10b981", "#059669", "#047857"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                paddingHorizontal: 24,
+                paddingVertical: 12,
+                borderRadius: 9999,
+                shadowColor: "#10b981",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 4,
+                elevation: 5,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {isPaying ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <>
+                  <Ionicons
+                    name="lock-closed-outline"
+                    size={20}
+                    color="white"
+                    style={{ marginRight: 8 }}
+                  />
+                  <Text className="font-bold text-base text-white">
+                    Pay {reward.price} $XION
+                  </Text>
+                </>
+              )}
+            </LinearGradient>
           </TouchableOpacity>
         )}
-        {/* --- END OF CORRECTION --- */}
+        {/* --- END OF UNIFIED BUTTON LOGIC --- */}
       </View>
     </View>
   );

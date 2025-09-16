@@ -52,7 +52,7 @@ export const ScoreCircle: React.FC<ScoreCircleProps> = ({ score, rating, size, s
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </Svg>
-      <View className="absolute items-center justify-center">
+      <View className="absolute items-center justify-center ">
         <Text className="text-5xl font-bold text-gray-800">{score}</Text>
         <Text className="text-xl text-gray-500">{rating}</Text>
       </View>
