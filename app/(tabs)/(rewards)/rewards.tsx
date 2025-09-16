@@ -26,7 +26,7 @@ export default function RewardsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const userScore = persona?.personaScore?.score || 0;
 
- const fetchAllRewards = useCallback(async () => {
+  const fetchAllRewards = useCallback(async () => {
     if (!queryClient) return;
     setIsLoading(true);
     try {
@@ -35,7 +35,7 @@ export default function RewardsScreen() {
         DOCUSTORE_ADDRESS,
         queryMsg
       );
-      
+
       // --- THIS IS THE FINAL, CORRECTED PARSING LOGIC ---
       // The Abstraxion SDK client returns the `documents` array at the top level.
       if (response && response.documents) {
@@ -50,16 +50,20 @@ export default function RewardsScreen() {
         const otherUsersRewards = allRewards.filter(
           (r: any) => r.creatorAddress !== account?.bech32Address
         );
-        console.log("No. of rewards after filtering:", otherUsersRewards.length);
+        console.log(
+          "No. of rewards after filtering:",
+          otherUsersRewards.length
+        );
         setRewards(
-          otherUsersRewards.sort((a: any, b: any) => b.requiredScore - a.requiredScore)
+          otherUsersRewards.sort(
+            (a: any, b: any) => b.requiredScore - a.requiredScore
+          )
         );
       } else {
-          console.log("No documents found in the response.");
-          setRewards([]);
+        console.log("No documents found in the response.");
+        setRewards([]);
       }
       // --- END OF FIX ---
-
     } catch (error) {
       setRewards([]);
       console.error("Failed to fetch public rewards:", error);
@@ -67,7 +71,6 @@ export default function RewardsScreen() {
       setIsLoading(false);
     }
   }, [queryClient, account?.bech32Address]);
-
 
   useFocusEffect(
     useCallback(() => {
@@ -96,9 +99,10 @@ export default function RewardsScreen() {
           rewards.map((reward) => (
             <RewardCard
               key={reward.id}
-              {...reward}
+              reward={reward} // Pass the entire object
               userScore={userScore}
               isOwner={false}
+              onSuccess={fetchAllRewards} // Refresh the list on success
             />
           ))
         )}

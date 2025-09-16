@@ -113,7 +113,7 @@ const getThemedImageUrl = async (title: string): Promise<string> => {
 };
 
 export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
-  onClose
+  onClose,
 }) => {
   const { data: account } = useAbstraxionAccount();
   const { client: signingClient } = useAbstraxionSigningClient();
@@ -187,6 +187,7 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
         value: rewardValue, // The actual reward link/code
         requiredScore: Math.round(requiredScore),
         price: Math.round(price), // Price field added
+        paidUsers: [], // Initialize with an empty array
         creatorAddress: account.bech32Address,
         createdAt: new Date().toISOString(),
       };
@@ -320,7 +321,7 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
                   {Math.round(price)}
                 </Text>
               </View>
-         
+
               <TouchableOpacity
                 className={`w-3/4 mx-auto py-4 mb-4 rounded-full items-center ${isLoading ? "bg-blue-300" : "bg-blue-500"}`}
                 onPress={handleCreateReward}

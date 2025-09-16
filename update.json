@@ -1,0 +1,17 @@
+{
+  "Update": {
+    "collection": "rewards",
+    "document": "1756998007439",
+    "data": {
+      "title": "Persona DAO - Governance Council Seat",
+      "description": "Nominate yourself for a 3-month term on the Persona DAO's Governance Council. Council members vote on proposals that shape the future of the platform and get exclusive access to chats with the core team. Requires a strong Professionalism and Social Influence score.",
+      "imageUrl": "https://images.pexels.com/photos/60504/security-protection-anti-virus-software-60504.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+      "value": "https://discord.gg/secret-governance-channel",
+      "requiredScore": 83,
+      "creatorAddress": "xion14hep8c9ufl50sl2umw4glncfwqshr0ze76tcygy7ak9q7l34swcqpk6se2",
+      "createdAt": "2025-09-04T15:00:07.439Z",
+      "price": "5",
+      "paidUsers": []
+    }
+  }
+}
