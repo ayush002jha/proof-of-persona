@@ -13,6 +13,7 @@ import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 import { PersonaDashboard } from "../../components/PersonaDashboard";
 import { usePersona } from "@/hooks/PersonaContext"; // Adjust the import path as necessary
 import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function DashboardScreen() {
   const { data: account, logout } = useAbstraxionAccount();
@@ -80,8 +81,10 @@ export default function DashboardScreen() {
                   colors={["#10b981", "#059669", "#047857"]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
-                  className="px-6 py-3 rounded-full shadow-lg shadow-green-500/25"
+                  className="flex-row items-center justify-center px-6 py-3 rounded-full shadow-lg shadow-green-500/25"
                 >
+                  {/* wallet icon */}
+                  <Ionicons name="wallet" size={20} color="white" className="mr-2" />
                   <Text className="text-white font-bold text-lg">Buy XION</Text>
                 </LinearGradient>
               </TouchableOpacity>

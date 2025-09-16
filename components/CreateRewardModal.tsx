@@ -25,6 +25,7 @@ import Animated, {
   withSpring,
   runOnJS,
 } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
 
 const DOCUSTORE_ADDRESS = process.env.EXPO_PUBLIC_DOCUSTORE_CONTRACT_ADDRESS!;
 const PEXELS_API_KEY = process.env.EXPO_PUBLIC_PEXELS_API_KEY!;
@@ -337,17 +338,36 @@ export const CreateRewardModal: React.FC<CreateRewardModalProps> = ({
               </View>
 
               <TouchableOpacity
-                className={`w-3/4 mx-auto py-4 mb-4 rounded-full items-center ${isLoading ? "bg-blue-300" : "bg-blue-500"}`}
+                className={` mx-auto rounded-full items-center ${isLoading ? "bg-blue-300" : "bg-blue-500"}`}
                 onPress={handleCreateReward}
                 disabled={isLoading}
               >
-                {isLoading ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <Text className="text-white text-lg font-bold">
-                    Create Reward
-                  </Text>
-                )}
+                <LinearGradient
+                  colors={["#3b82f6", "#2563eb", "#1d4ed8"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{
+                    paddingHorizontal: 24,
+                    paddingVertical: 12,
+                    borderRadius: 9999,
+                    shadowColor: "#3b82f6",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 4,
+                    elevation: 5,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text className="text-white text-lg font-bold">
+                      Create Reward
+                    </Text>
+                  )}
+                </LinearGradient>
               </TouchableOpacity>
             </View>
           </KeyboardAvoidingView>
